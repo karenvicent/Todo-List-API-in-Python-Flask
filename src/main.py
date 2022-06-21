@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User
+from models import db, User, Todolist
 #from models import Person
 
 app = Flask(__name__)
@@ -34,10 +34,43 @@ def sitemap():
 def handle_hello():
 
     response_body = {
-        "msg": "Hello, this is your GET /user response "
+        "msg": "Hello, this is your GET /user response ",
+        "sucess": "True"
     }
 
     return jsonify(response_body), 200
+
+@app.route('/todolist', methods=['GET'])
+def get_todas_las_tareas():
+    alltareas = Todolist.query.all()
+    tareas = list(map(lambda n: n.serialize(),alltareas))
+    return jsonify(tareas), 200
+
+@app.route('/todolist', methods=['POST'])
+def add_tarea():
+    body = request.get_json()
+    tarea = Todolist(text=body['text'], done=body['done'])
+    db.session.add(tarea)
+    db.session.commit()
+
+    respuesta = {
+        "msg": "Tarea creada exitosamente"
+    }
+    return jsonify(respuesta), 200
+
+@app.route('/todolistdelete/<int:id>/', methods=['DELETE'])
+def delete_tarea(id):
+    tarea = Todolist.query.get(id)
+    if tarea is None:
+        raise APIException("Tarea no encontrada", status_code=404)
+    db.session.delete(tarea)
+    db.session.commit()
+        
+    respuesta = {
+        "msg": "Tarea borrada exitosamente"
+    }
+    return jsonify(respuesta), 200
+
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':

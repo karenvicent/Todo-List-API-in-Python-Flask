@@ -17,3 +17,18 @@ class User(db.Model):
             "email": self.email,
             # do not serialize the password, its a security breach
         }
+
+class Todolist(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    text = db.Column(db.String(120), unique=True, nullable=False)
+    done = db.Column(db.Boolean(), unique=False, nullable=False)
+
+    def __repr__(self):
+        return '<TodoList %r>' % self.text
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "text": self.text,
+            # do not serialize the password, its a security breach
+        }
